@@ -16,7 +16,7 @@ async function main() {
   // Servo PWM pulse: min=0.0009[sec], max=0.0021[sec] angle=+-100[%]
   await pca9685.init(min, max, 100);
   for (;;) {
-    for (let i = -100; i < 100; i += 10) {
+    for (let i = -100; i <= 100; i += 10) {
       await pca9685.setServo(0, i);
       console.log(i + "%");
       await sleep(100);
