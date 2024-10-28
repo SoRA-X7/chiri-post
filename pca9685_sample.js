@@ -18,5 +18,8 @@ async function main() {
     await pca9685.setServo(0, 20);
     console.log("20 deg");
     await sleep(1000);
+    await pca9685.setServo(0, 0);
+    console.log("0 deg");
+    await sleep(1000);
   }
 }
