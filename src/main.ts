@@ -25,6 +25,8 @@ const waitFor = (port: GPIOPort, value: 0 | 1): Promise<void> => {
 main();
 
 async function main() {
+  console.log("Initializing...");
+
   const i2cAccess = await requestI2CAccess();
   const pca9685 = new PCA9685(i2cAccess.ports.get(1)!, 0x40);
   await pca9685.init(PWM_MIN, PWM_MAX, 100);
@@ -32,6 +34,8 @@ async function main() {
   const gpioAccess = await requestGPIOAccess();
   const irObstacle = gpioAccess.ports.get(17)!;
   await irObstacle.export("in");
+
+  console.log("Ready");
 
   for (;;) {
     // Wait for paper insert
