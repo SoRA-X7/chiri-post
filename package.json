@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "prepare": "curl -sSfLO https://chirimen.org/remote-connection/js/beta/RelayServer.js"
+    "prepare": "curl -sSfLO https://chirimen.org/remote-connection/js/beta/RelayServer.js",
+    "tsc": "tsc",
+    "start": "tsc && node dist/main.js"
   },
   "dependencies": {
     "@chirimen/ads1015": "latest",
@@ -51,6 +53,7 @@
     "node-web-gpio": "latest",
     "node-web-i2c": "latest",
     "pi-camera-connect": "^0.3.4",
+    "typescript": "^5.6.3",
     "websocket": "^1.0.34"
   }
 }
