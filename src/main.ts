@@ -1,26 +1,12 @@
 import { requestI2CAccess } from "node-web-i2c";
 import { GPIOPort, requestGPIOAccess } from "node-web-gpio";
 import PCA9685 from "@chirimen/pca9685";
+import { sleep, waitFor } from "./utils";
 
 const PWM_MIN = 0.95e-3;
 const PWM_MAX = 2.1e-3;
 
 const SPEED = 20;
-
-const sleep = (msec: number) =>
-  new Promise((resolve) => setTimeout(resolve, msec));
-
-const waitFor = (port: GPIOPort, value: 0 | 1): Promise<void> => {
-  return new Promise((resolve) => {
-    port.onchange = (e) => {
-      if (e.value === value) {
-        port.onchange = undefined;
-        console.log("onchange detected");
-        resolve();
-      }
-    };
-  });
-};
 
 main();
 
