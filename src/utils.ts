@@ -14,3 +14,24 @@ export const waitFor = (port: GPIOPort, value: 0 | 1): Promise<void> => {
     };
   });
 };
+
+export type GPIOButton = {
+  press: () => Promise<void>;
+  longPress: () => Promise<void>;
+};
+
+export const button = async (port: GPIOPort): Promise<GPIOButton> => {
+  async function press(time: number) {
+    port.write(1);
+    await sleep(time);
+    port.write(0);
+  }
+
+  await port.export("out");
+  await port.write(0);
+
+  return {
+    press: () => press(100),
+    longPress: () => press(3000),
+  };
+};
