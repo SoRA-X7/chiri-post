@@ -1,4 +1,4 @@
-import { requestI2CAccess } from "./node_modules/node-web-i2c/index.js";
+import { requestI2CAccess } from "node-web-i2c";
 import PCA9685 from "@chirimen/pca9685";
 
 const min = 0.95e-3;
@@ -16,13 +16,12 @@ async function main() {
   // Servo PWM pulse: min=0.0009[sec], max=0.0021[sec] angle=+-100[%]
   await pca9685.init(min, max, 100);
   for (;;) {
-    for (let i = -100; i <= 100; i += 10) {
-      await pca9685.setServo(0, i);
-      console.log(i + "%");
-      await sleep(100);
-    }
     await pca9685.setServo(0, 0);
     console.log("0%");
     await sleep(1000);
+
+    await pca9685.setServo(0, 20);
+    console.log("20%");
+    await sleep(3000);
   }
 }
