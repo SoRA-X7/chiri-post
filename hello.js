@@ -11,8 +11,10 @@ async function blink() {
   for (;;) {
     // 1秒間隔で LED が点滅します
     await port.write(1); // LEDを点灯
+    console.log("1");
     await sleep(1000); // 1000 ms (1秒) 待機
     await port.write(0); // LEDを消灯
+    console.log("0");
     await sleep(1000); // 1000 ms (1秒) 待機
   }
 }

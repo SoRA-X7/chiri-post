@@ -5,7 +5,7 @@ export const sleep = (msec: number) =>
 
 export const waitFor = (port: GPIOPort, value: 0 | 1): Promise<void> => {
   return new Promise((resolve) => {
-    port.onchange = (e) => {
+    port.onchange = (e: any) => {
       if (e.value === value) {
         port.onchange = undefined;
         console.log("onchange detected");
@@ -20,15 +20,21 @@ export type GPIOButton = {
   longPress: () => Promise<void>;
 };
 
-export const button = async (port: GPIOPort): Promise<GPIOButton> => {
+export const button = async (
+  port: GPIOPort,
+  inverted = false
+): Promise<GPIOButton> => {
+  const on = inverted ? 0 : 1;
+  const off = inverted ? 1 : 0;
+
   async function press(time: number) {
-    port.write(1);
+    port.write(on);
     await sleep(time);
-    port.write(0);
+    port.write(off);
   }
 
   await port.export("out");
-  await port.write(0);
+  await port.write(off);
 
   return {
     press: () => press(100),

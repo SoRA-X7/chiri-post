@@ -2,11 +2,10 @@ import { requestI2CAccess } from "node-web-i2c";
 import * as util from "util";
 import * as child_process from "child_process";
 import * as fs from "fs";
-import { GPIOPort, requestGPIOAccess } from "node-web-gpio";
+import { requestGPIOAccess } from "node-web-gpio";
 import PCA9685 from "@chirimen/pca9685";
-import { button, sleep, waitFor } from "./utils";
+import { button, sleep, waitFor } from "./utils.js";
 import { FirebaseApp, initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import {
   getStorage,
   ref,
@@ -15,14 +14,12 @@ import {
 } from "firebase/storage";
 import { nanoid } from "nanoid";
 
-const exec = util.promisify(child_process.exec);
-
 const PWM_MIN = 0.95e-3;
 const PWM_MAX = 2.1e-3;
 
-const SPEED = 20;
+const SPEED = -40;
 
-const USER = "post-user";
+const USER = "user_001";
 
 main();
 
@@ -37,27 +34,33 @@ function firebaseInit(): FirebaseApp {
     measurementId: "G-9336CD1QMK",
   };
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
   return app;
 }
 
 async function uploadImage(userRef: StorageReference, image: Blob) {
   const id = nanoid();
   const file = ref(userRef, `${id}.jpg`);
-  uploadBytes(file, image);
+  uploadBytes(file, image, {
+    contentType: "image/jpeg",
+  });
   console.log("Uploaded", file.fullPath);
 }
 
 async function loadImageAndSave(userRef: StorageReference) {
   try {
     console.log("mount usb");
-    await exec("mount /dev/sda1 /mnt/usb");
+    try {
+      child_process.execSync("mount /dev/sda1 /mnt/usb");
+    } catch (e) {
+      console.log("mount failed", e);
+      return;
+    }
 
     console.log("read usb");
-    const path = fs.readdirSync("/mnt/usb").sort().at(-1);
+    const path = fs.readdirSync("/mnt/usb/DCIM/100MEDIA/").sort().at(-1);
     if (path) {
       console.log("file found, reading", path);
-      const buffer = fs.readFileSync(`/mnt/usb/${path}`);
+      const buffer = fs.readFileSync(`/mnt/usb/DCIM/100MEDIA/${path}`);
       const blob = new Blob([buffer]);
       console.log("uploading");
       await uploadImage(userRef, blob);
@@ -65,7 +68,11 @@ async function loadImageAndSave(userRef: StorageReference) {
     }
   } finally {
     console.log("unmount usb");
-    await exec("umount /mnt/usb");
+    try {
+      child_process.execSync("umount /mnt/usb");
+    } catch (e) {
+      console.log("umount failed", e);
+    }
   }
   console.log("done");
 }
@@ -83,10 +90,16 @@ async function main() {
   await pca9685.init(PWM_MIN, PWM_MAX, 100);
 
   const gpioAccess = await requestGPIOAccess();
-  const irObstacle = gpioAccess.ports.get(17)!;
+  const irObstacle = gpioAccess.ports.get(24)!;
   await irObstacle.export("in");
 
-  const scanBtn = await button(gpioAccess.ports.get(4)!);
+  const scanBtn = await button(gpioAccess.ports.get(26)!, false);
+
+  const usbConnect = gpioAccess.ports.get(21)!;
+  usbConnect.export("out");
+
+  await sleep(1000);
+  await usbConnect.write(1);
 
   console.log("Ready");
 
@@ -108,9 +121,19 @@ async function main() {
     console.log("Scan done");
     await sleep(1000);
 
+    await usbConnect.write(0); // connect USB
+
+    console.log("Waiting for USB connection");
+    await sleep(5000);
+
     await loadImageAndSave(userRef);
     await sleep(1000);
 
+    await usbConnect.write(1); // disconnect USB
+
+    await sleep(5000);
+
     await scanBtn.longPress(); // power off
+    console.log("Power off");
   }
 }
