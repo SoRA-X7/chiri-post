@@ -14,8 +14,13 @@ import { getStorage } from "firebase-admin/storage";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { vision } from "./gemini";
 import { initializeApp } from "firebase-admin/app";
+import { onDocumentCreated } from "firebase-functions/firestore";
+import { getMessaging, TokenMessage } from "firebase-admin/messaging";
+import { credential } from "firebase-admin";
 
-initializeApp();
+initializeApp({
+  credential: credential.applicationDefault(),
+});
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -61,3 +66,35 @@ export const onImageUploaded = onObjectFinalized(async (ev) => {
     console.log("Document written with ID: ", ref.id);
   }
 });
+
+export const onImageAnalyzed = onDocumentCreated(
+  "images/{imageId}",
+  async (ev) => {
+    const data = ev.data?.data();
+    if (data) {
+      const tokenData = await getFirestore()
+        .collection("fcmTokens")
+        .doc(data.user)
+        .get();
+      const token = tokenData.data()?.token;
+
+      const message: TokenMessage = {
+        notification: {
+          title: "郵便物が届きました！",
+          body: data.title,
+        },
+        data: {
+          id: ev.params.imageId,
+          type: data.type,
+          title: data.title,
+          description: data.description,
+          importance: data.importance.toString(),
+        },
+        token,
+      };
+
+      await getMessaging().send(message);
+      logger.info("Notification sent for image analysis");
+    }
+  }
+);
