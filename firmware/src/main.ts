@@ -1,5 +1,4 @@
 import { requestI2CAccess } from "node-web-i2c";
-import * as util from "util";
 import * as child_process from "child_process";
 import * as fs from "fs";
 import { requestGPIOAccess } from "node-web-gpio";
