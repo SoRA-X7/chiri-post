@@ -17,6 +17,7 @@ const PWM_MIN = 0.95e-3;
 const PWM_MAX = 2.1e-3;
 
 const SPEED = -40;
+const GUIDE_MUL = 0.8;
 
 const USER = "user_001";
 
@@ -112,9 +113,11 @@ async function main() {
     await sleep(1000);
     await scanBtn.press(); // start scan
 
-    pca9685.setServo(0, SPEED);
+    pca9685.setServo(14, SPEED);
+    pca9685.setServo(15, SPEED * GUIDE_MUL);
     await sleep(5000);
-    pca9685.setServo(0, 0);
+    pca9685.setServo(14, 0);
+    pca9685.setServo(15, 0);
 
     await scanBtn.press(); // stop scan
     console.log("Scan done");
