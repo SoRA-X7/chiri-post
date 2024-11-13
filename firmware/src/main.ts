@@ -137,6 +137,8 @@ async function main() {
     // Start scan
     await scanBtn.longPress(); // power on
 
+    await sleep(1000);
+
     while ((await irObstacle.read()) === 0) {
       await scanAndSend();
     }

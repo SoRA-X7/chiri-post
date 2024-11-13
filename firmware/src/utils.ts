@@ -46,7 +46,7 @@ export const button = async (
   await port.write(off);
 
   return {
-    press: () => press(100),
+    press: () => press(300),
     longPress: () => press(3000),
   };
 };
