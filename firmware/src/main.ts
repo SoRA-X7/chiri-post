@@ -103,14 +103,7 @@ async function main() {
 
   console.log("Ready");
 
-  while (true) {
-    // Wait for paper insert
-    await waitFor(irObstacle, 0, true);
-    console.log("Paper detected");
-
-    // Start scan
-    await scanBtn.longPress(); // power on
-    await sleep(1000);
+  async function scanAndSend() {
     await scanBtn.press(); // start scan
 
     pca9685.setServo(14, SPEED);
@@ -134,6 +127,21 @@ async function main() {
     await usbConnect.write(1); // disconnect USB
 
     await sleep(5000);
+  }
+
+  while (true) {
+    // Wait for paper insert
+    await waitFor(irObstacle, 0, true);
+    console.log("Paper detected");
+
+    // Start scan
+    await scanBtn.longPress(); // power on
+
+    while ((await irObstacle.read()) === 0) {
+      await scanAndSend();
+    }
+
+    await sleep(1000);
 
     await scanBtn.longPress(); // power off
     console.log("Power off");
