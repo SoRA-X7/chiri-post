@@ -17,7 +17,7 @@ const PWM_MIN = 0.95e-3;
 const PWM_MAX = 2.1e-3;
 
 const SPEED = -40;
-const GUIDE_MUL = 0.8;
+const GUIDE_MUL = 1.4;
 
 const USER = "user_001";
 
@@ -115,7 +115,7 @@ async function main() {
 
     pca9685.setServo(14, SPEED);
     pca9685.setServo(15, SPEED * GUIDE_MUL);
-    await sleep(5000);
+    await sleep(3500);
     pca9685.setServo(14, 0);
     pca9685.setServo(15, 0);
 

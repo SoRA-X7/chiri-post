@@ -3,8 +3,17 @@ import { GPIOPort } from "node-web-gpio";
 export const sleep = (msec: number) =>
   new Promise((resolve) => setTimeout(resolve, msec));
 
-export const waitFor = (port: GPIOPort, value: 0 | 1): Promise<void> => {
-  return new Promise((resolve) => {
+export const waitFor = async (
+  port: GPIOPort,
+  value: 0 | 1,
+  immediate = false
+): Promise<void> => {
+  if (immediate) {
+    if ((await port.read()) === value) {
+      return;
+    }
+  }
+  await new Promise<void>((resolve) => {
     port.onchange = (e: any) => {
       if (e.value === value) {
         port.onchange = undefined;
