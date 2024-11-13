@@ -105,7 +105,7 @@ async function main() {
 
   while (true) {
     // Wait for paper insert
-    await waitFor(irObstacle, 0);
+    await waitFor(irObstacle, 0, true);
     console.log("Paper detected");
 
     // Start scan
